@@ -4,7 +4,8 @@
   "scripts": {
     "build": "nitro build",
     "dev": "nitro dev",
-    "preview": "node .output/server/index.mjs"
+    "preview": "node .output/server/index.mjs",
+    "prepare": "nitro prepare"
   },
   "devDependencies": {
     "@types/node": "^25.0.10",
