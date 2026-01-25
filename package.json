@@ -1,0 +1,18 @@
+{
+  "name": "xyra-paste",
+  "private": true,
+  "scripts": {
+    "build": "nitro build",
+    "dev": "nitro dev",
+    "preview": "node .output/server/index.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "nitropack": "^2.13.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.60.0"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}
