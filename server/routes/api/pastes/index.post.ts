@@ -1,10 +1,6 @@
 import { createPaste } from "~/services/paste-service";
 import { createPasteInputSchema, MAX_CONTENT_BYTES } from "~/schemas/paste";
-import { enforceRateLimit } from "~/lib/rate-limit";
-
 export default eventHandler(async (event) => {
-  await enforceRateLimit(event);
-
   const body = await readBody(event);
   const parsed = createPasteInputSchema.safeParse(body);
   if (!parsed.success) {

@@ -1,15 +1,21 @@
 type RateLimitRecord = { count: number; resetAt: number };
 
-export const enforceRateLimit = async (event) => {
+export default defineEventHandler(async (event) => {
+  if (event.node.req.method?.toUpperCase() !== "POST") {
+    return;
+  }
+
+  if (!getRequestURL(event).pathname.startsWith("/api/pastes")) {
+    return;
+  }
+
   const { windowMs, maxRequests } = useRuntimeConfig(event).paste.rateLimit;
   const storage = useStorage("ratelimits");
   const ip = getRequestIP(event, { xForwardedFor: true });
   const key = `pastes:${ip}`;
   const now = Date.now();
 
-  const current: RateLimitRecord = (await storage.getItem<RateLimitRecord>(
-    key,
-  )) ?? {
+  const current: RateLimitRecord = (await storage.getItem<RateLimitRecord>(key)) ?? {
     count: 0,
     resetAt: now + windowMs,
   };
@@ -29,4 +35,4 @@ export const enforceRateLimit = async (event) => {
 
   current.count += 1;
   await storage.setItem(key, current);
-};
+});
