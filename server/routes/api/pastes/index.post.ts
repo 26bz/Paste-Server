@@ -1,7 +1,9 @@
 import { createPaste } from "~/services/paste-service";
 import { createPasteInputSchema, MAX_CONTENT_BYTES } from "~/schemas/paste";
-export default eventHandler(async (event) => {
+
+export default defineEventHandler(async (event) => {
   const body = await readBody(event);
+
   const parsed = createPasteInputSchema.safeParse(body);
   if (!parsed.success) {
     throw createError({
@@ -12,6 +14,7 @@ export default eventHandler(async (event) => {
   }
 
   const byteSize = new TextEncoder().encode(parsed.data.content).length;
+
   if (byteSize > MAX_CONTENT_BYTES) {
     throw createError({
       statusCode: 413,
@@ -21,14 +24,17 @@ export default eventHandler(async (event) => {
 
   const paste = await createPaste(parsed.data, {
     ip: getRequestIP(event, { xForwardedFor: true }),
-    userAgent: event.node.req.headers["user-agent"],
+    userAgent: getRequestHeader(event, "user-agent"),
   });
 
+  const url = getRequestURL(event);
+
   setResponseStatus(event, 201, "Created");
+
   return {
     id: paste.id,
-    url: `${getRequestURL(event).origin}/p/${paste.id}`,
-    rawUrl: `${getRequestURL(event).origin}/api/pastes/${paste.id}/raw`,
+    url: `${url.origin}/p/${paste.id}`,
+    rawUrl: `${url.origin}/api/pastes/${paste.id}/raw`,
     expiresAt: paste.expiresAt,
     createdAt: paste.createdAt,
   };

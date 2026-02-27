@@ -1,21 +1,23 @@
 type RateLimitRecord = { count: number; resetAt: number };
 
 export default defineEventHandler(async (event) => {
-  if (event.node.req.method?.toUpperCase() !== "POST") {
-    return;
-  }
+  if (event.method !== "POST") return;
 
-  if (!getRequestURL(event).pathname.startsWith("/api/pastes")) {
-    return;
-  }
+  const url = getRequestURL(event);
+  if (!url.pathname.startsWith("/api/pastes")) return;
 
   const { windowMs, maxRequests } = useRuntimeConfig(event).paste.rateLimit;
+
   const storage = useStorage("ratelimits");
-  const ip = getRequestIP(event, { xForwardedFor: true });
+
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
   const key = `pastes:${ip}`;
+
   const now = Date.now();
 
-  const current: RateLimitRecord = (await storage.getItem<RateLimitRecord>(key)) ?? {
+  const current: RateLimitRecord = (await storage.getItem<RateLimitRecord>(
+    key,
+  )) ?? {
     count: 0,
     resetAt: now + windowMs,
   };
@@ -27,6 +29,9 @@ export default defineEventHandler(async (event) => {
 
   if (current.count >= maxRequests) {
     const retryAfter = Math.ceil((current.resetAt - now) / 1000);
+
+    setResponseHeader(event, "Retry-After", retryAfter);
+
     throw createError({
       statusCode: 429,
       statusMessage: `Rate limit exceeded. Try again in ${retryAfter}s.`,
@@ -34,5 +39,6 @@ export default defineEventHandler(async (event) => {
   }
 
   current.count += 1;
+
   await storage.setItem(key, current);
 });

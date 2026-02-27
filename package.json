@@ -8,10 +8,10 @@
     "prepare": "nitro prepare"
   },
   "devDependencies": {
-    "@types/node": "^25.0.10",
+    "@types/node": "^25.3.2",
     "nitropack": "^2.13.1",
     "typescript": "^5.9.3",
-    "wrangler": "^4.60.0"
+    "wrangler": "^4.69.0"
   },
   "dependencies": {
     "zod": "^4.3.6"

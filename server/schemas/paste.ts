@@ -23,7 +23,7 @@ const expiresSchema = z
     ) {
       throw new z.ZodError([
         {
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Unsupported expiration option",
           path: ["expiresInMinutes"],
         },

@@ -19,6 +19,7 @@ type LayoutOptions = {
   inlineScript?: string;
 };
 
+
 export const renderLayout = ({
   title = "Xyra Paste",
   description = "Minimal pastebin for XyraPanel diagnostics",

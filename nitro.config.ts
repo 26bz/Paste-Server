@@ -81,6 +81,7 @@ export default defineNitroConfig({
       compatibility_date: "2024-12-18",
       vars: {
         XYRA_STORAGE_DRIVER: "${XYRA_STORAGE_DRIVER}",
+        XYRA_CORS_ORIGINS: "${XYRA_CORS_ORIGINS}",
       },
       kv_namespaces: kvNamespaces,
     },

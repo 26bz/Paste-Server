@@ -108,7 +108,6 @@ export default eventHandler(async () => {
     (function () {
       var form = document.getElementById("paste-form");
       var statusEl = document.getElementById("status");
-      var keyInput = document.getElementById("api-key");
       var recentList = document.getElementById("recent-list");
 
       if (!form || !statusEl) {
@@ -141,12 +140,6 @@ export default eventHandler(async () => {
         statusEl.textContent = message;
         statusEl.className = "small mt-1 text-" + type;
       };
-
-      var requireKey = form.dataset && form.dataset.requireKey === "true";
-      var defaultKey = (form.dataset && form.dataset.defaultKey) || "";
-      if (defaultKey && keyInput && !keyInput.value) {
-        keyInput.value = defaultKey;
-      }
 
       form.addEventListener("submit", async function (event) {
         event.preventDefault();
@@ -181,15 +174,6 @@ export default eventHandler(async () => {
           var headers = {
             "Content-Type": "application/json",
           };
-
-          if (requireKey) {
-            var providedKey = keyInput && keyInput.value ? keyInput.value.trim() : "";
-            if (!providedKey) {
-              setStatus("API key is required for this server.", "warning");
-              return;
-            }
-            headers["X-API-Key"] = providedKey;
-          }
 
           var response = await fetch("/api/pastes", {
             method: "POST",

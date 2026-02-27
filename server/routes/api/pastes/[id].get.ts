@@ -1,5 +1,5 @@
 import { getPasteOrThrow } from "~/services/paste-service";
 
-export default eventHandler((event) =>
-  getPasteOrThrow(event.context.params?.id),
+export default defineEventHandler((event) =>
+  getPasteOrThrow(getRouterParam(event, "id")!),
 );
