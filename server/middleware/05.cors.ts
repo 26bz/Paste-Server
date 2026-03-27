@@ -1,3 +1,5 @@
+import { defineHandler } from "nitro";
+
 const ALLOWED_ORIGINS = (process.env.XYRA_CORS_ORIGINS ?? "*")
   .split(",")
   .map((o) => o.trim())
@@ -9,8 +11,8 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400",
 };
 
-export default defineEventHandler((event) => {
-  const origin = getRequestHeader(event, "origin");
+export default defineHandler((event) => {
+  const origin = event.req.headers.get("origin");
 
   let allowedOrigin: string | undefined;
 
@@ -22,14 +24,17 @@ export default defineEventHandler((event) => {
 
   if (!allowedOrigin) return;
 
-  setResponseHeader(event, "Access-Control-Allow-Origin", allowedOrigin);
-
-  for (const [key, value] of Object.entries(CORS_HEADERS)) {
-    setResponseHeader(event, key, value);
+  event.res.headers.set("Access-Control-Allow-Origin", allowedOrigin);
+  if (allowedOrigin !== "*") {
+    event.res.headers.set("Vary", "Origin");
   }
 
-  if (event.method?.toUpperCase() === "OPTIONS") {
-    setResponseStatus(event, 204);
+  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+    event.res.headers.set(key, value);
+  }
+
+  if (event.req.method === "OPTIONS") {
+    event.res.status = 204;
     return "";
   }
 });

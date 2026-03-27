@@ -4,7 +4,8 @@ import {
   ALLOWED_EXPIRATIONS_MINUTES,
   MAX_CONTENT_BYTES,
 } from "~/schemas/paste";
-
+import { defineHandler } from "nitro";
+import { useRuntimeConfig } from "nitro/runtime-config";
 const expirationLabels: Record<number, string> = {
   10: "10 minutes",
   60: "1 hour",
@@ -13,7 +14,8 @@ const expirationLabels: Record<number, string> = {
   10080: "7 days",
 };
 
-export default eventHandler(async () => {
+export default defineHandler(async (event) => {
+  event.res.headers.set("Content-Type", "text/html; charset=utf-8");
   const runtimeConfig = useRuntimeConfig();
   const defaultKey = runtimeConfig.public?.paste?.defaultKey ?? "";
   const recent = await getRecentPastes(5);

@@ -1,4 +1,4 @@
-import { defineNitroConfig } from "nitropack/config";
+import { defineNitroConfig } from "nitro/config";
 
 const storageDriver = process.env.XYRA_STORAGE_DRIVER ?? "kv";
 const kvBindingNames = {
@@ -53,6 +53,7 @@ const kvStorage = {
 
 const storage = storageDriver === "fs" ? fsStorage : kvStorage;
 const devStorage = storageDriver === "fs" ? undefined : fsStorage;
+const pruneCron = process.env.XYRA_PRUNE_CRON ?? "*/10 * * * *";
 const kvNamespaces = Object.entries(kvBindingNames)
   .map(([key, binding]) => {
     const id = kvNamespaceIds[key as keyof typeof kvNamespaceIds];
@@ -68,21 +69,16 @@ const kvNamespaces = Object.entries(kvBindingNames)
 export default defineNitroConfig({
   compatibilityDate: "2024-12-18",
   preset: "cloudflare_module",
-  srcDir: "server",
-  imports: {
-    autoImport: true,
+  serverDir: "server",
+  errorHandler: "./server/error",
+  experimental: {
+    tasks: true,
   },
   cloudflare: {
     deployConfig: true,
     nodeCompat: true,
     wrangler: {
       name: "xyra-paste",
-      main: ".output/server/index.mjs",
-      compatibility_date: "2024-12-18",
-      vars: {
-        XYRA_STORAGE_DRIVER: "${XYRA_STORAGE_DRIVER}",
-        XYRA_CORS_ORIGINS: "${XYRA_CORS_ORIGINS}",
-      },
       kv_namespaces: kvNamespaces,
     },
   },
@@ -98,6 +94,21 @@ export default defineNitroConfig({
         defaultKey: process.env.XYRA_UI_DEFAULT_KEY || "",
       },
     },
+  },
+  routeRules: {
+    "/api/**": {
+      headers: {
+        "cache-control": "no-store",
+      },
+    },
+    "/p/**": {
+      headers: {
+        "cache-control": "no-store",
+      },
+    },
+  },
+  scheduledTasks: {
+    [pruneCron]: ["prune-expired"],
   },
   storage,
   devStorage,

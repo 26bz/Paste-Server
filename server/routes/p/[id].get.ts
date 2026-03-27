@@ -1,13 +1,16 @@
 import { getPasteOrThrow } from "~/services/paste-service";
 import { escapeHtml, renderLayout } from "~/templates/layout";
+import { defineHandler, HTTPError } from "nitro";
+import { getRouterParam, getRequestHost } from "nitro/h3";
 
-export default defineEventHandler(async (event) => {
+export default defineHandler(async (event) => {
+  event.res.headers.set("Content-Type", "text/html; charset=utf-8");
   const id = getRouterParam(event, "id");
 
   if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Missing paste id",
+    throw new HTTPError({
+      status: 400,
+      message: "Missing paste id",
     });
   }
 

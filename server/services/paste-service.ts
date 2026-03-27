@@ -1,4 +1,6 @@
 import type { CreatePasteInput } from "~/schemas/paste";
+import { HTTPError } from "nitro";
+import { useStorage } from "nitro/storage";
 
 export type PasteRecord = {
   id: string;
@@ -101,10 +103,10 @@ export const removePaste = async (id: string) => {
 
 export const getPasteOrThrow = async (id: string | undefined) => {
   if (!id)
-    throw createError({ statusCode: 400, statusMessage: "Missing paste id" });
+    throw new HTTPError({ status: 400, message: "Missing paste id" });
   const paste = await getPaste(id);
   if (!paste)
-    throw createError({ statusCode: 404, statusMessage: "Paste not found" });
+    throw new HTTPError({ status: 404, message: "Paste not found" });
   return paste;
 };
 

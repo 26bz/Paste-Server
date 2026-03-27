@@ -1,4 +1,6 @@
 import { META_INDEX_KEY, type PasteSummary } from "~/services/paste-service";
+import { useStorage } from "nitro/storage";
+import { defineTask } from "nitro/task";
 
 export default defineTask({
   meta: {

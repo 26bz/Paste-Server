@@ -1,12 +1,17 @@
+import { defineHandler, HTTPError } from "nitro";
+import { useStorage } from "nitro/storage";
+import { getRequestIP, getRequestURL } from "nitro/h3";
+import { useRuntimeConfig } from "nitro/runtime-config";
+
 type RateLimitRecord = { count: number; resetAt: number };
 
-export default defineEventHandler(async (event) => {
-  if (event.method !== "POST") return;
+export default defineHandler(async (event) => {
+  if (event.req.method !== "POST") return;
 
   const url = getRequestURL(event);
   if (!url.pathname.startsWith("/api/pastes")) return;
 
-  const { windowMs, maxRequests } = useRuntimeConfig(event).paste.rateLimit;
+  const { windowMs, maxRequests } = useRuntimeConfig().paste.rateLimit;
 
   const storage = useStorage("ratelimits");
 
@@ -30,11 +35,11 @@ export default defineEventHandler(async (event) => {
   if (current.count >= maxRequests) {
     const retryAfter = Math.ceil((current.resetAt - now) / 1000);
 
-    setResponseHeader(event, "Retry-After", retryAfter);
+    event.res.headers.set("Retry-After", String(retryAfter));
 
-    throw createError({
-      statusCode: 429,
-      statusMessage: `Rate limit exceeded. Try again in ${retryAfter}s.`,
+    throw new HTTPError({
+      status: 429,
+      message: `Rate limit exceeded. Try again in ${retryAfter}s.`,
     });
   }
 
